@@ -57,9 +57,12 @@ resource "aws_instance" "jenkins" {
               apt install -y software-properties-common
               apt install -y openjdk-17-jdk
 
-              # 기본 java를 java 17로 설정
-              update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1
-              update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+              # Java 대체 경로 등록 및 설정 (자동으로 넘기기 위해 echo 사용)
+              echo | update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1
+              echo | update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
+              # 확인용 로그 남기기
+              java -version > /tmp/java_version_check.log
 
               # Docker 설치
               apt install -y docker.io
@@ -68,16 +71,15 @@ resource "aws_instance" "jenkins" {
               systemctl start docker
 
               # Jenkins 설치
-              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee \
-                /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-                https://pkg.jenkins.io/debian binary/ | tee \
-                /etc/apt/sources.list.d/jenkins.list > /dev/null
+              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
               apt update -y
               apt install -y jenkins
+              systemctl daemon-reexec
+              systemctl daemon-reload
               systemctl enable jenkins
-              systemctl start jenkins
+              systemctl restart jenkins
               EOF
 
 }
