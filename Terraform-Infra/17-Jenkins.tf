@@ -25,7 +25,7 @@ resource "aws_security_group" "jenkins_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["YOUR.IP.ADDR.XX/32"]  # SSH 접속용
+    cidr_blocks = ["0.0.0.0/0"]  # SSH 접속용
   }
 
   egress {
