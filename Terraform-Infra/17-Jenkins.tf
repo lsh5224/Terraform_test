@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "ec2_assume_role" {
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   description = "Allow Jenkins and SSH"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.MSA_vpc.id
 
   ingress {
     from_port   = 8080
