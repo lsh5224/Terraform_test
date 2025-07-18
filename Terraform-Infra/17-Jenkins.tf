@@ -52,35 +52,66 @@ resource "aws_instance" "jenkins" {
   }
 
   user_data = <<-EOF
-              #!/bin/bash
-              apt update -y
-              apt install -y software-properties-common
-              apt install -y openjdk-17-jdk
+                #!/bin/bash
+                apt update -y
+                apt install -y openjdk-17-jdk docker.io
+                usermod -aG docker ubuntu
+                systemctl enable docker
+                systemctl start docker
 
-              # Java 대체 경로 등록 및 설정 (자동으로 넘기기 위해 echo 사용)
-              echo | update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1
-              echo | update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+                # Jenkins 설치
+                curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+                echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
+                apt update -y
+                apt install -y jenkins
 
-              # 확인용 로그 남기기
-              java -version > /tmp/java_version_check.log
+                # Jenkins 자동 설정: admin 계정 + 플러그인 설치
+                mkdir -p /var/lib/jenkins/init.groovy.d
 
-              # Docker 설치
-              apt install -y docker.io
-              usermod -aG docker ubuntu
-              systemctl enable docker
-              systemctl start docker
+                cat <<EOT > /var/lib/jenkins/init.groovy.d/basic-security.groovy
+                import jenkins.model.*
+                import hudson.security.*
+                def instance = Jenkins.getInstance()
+                def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+                hudsonRealm.createAccount("admin", "admin")
+                instance.setSecurityRealm(hudsonRealm)
+                def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+                strategy.setAllowAnonymousRead(false)
+                instance.setAuthorizationStrategy(strategy)
+                instance.save()
+                EOT
 
-              # Jenkins 설치
-              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+                cat <<EOT > /var/lib/jenkins/init.groovy.d/plugins.groovy
+                import jenkins.model.*
+                import hudson.model.*
+                def instance = Jenkins.getInstance()
+                def pluginManager = instance.getPluginManager()
+                def updateCenter = instance.getUpdateCenter()
 
-              apt update -y
-              apt install -y jenkins
-              systemctl daemon-reexec
-              systemctl daemon-reload
-              systemctl enable jenkins
-              systemctl restart jenkins
-              EOF
+                def plugins = [
+                  "git", "workflow-aggregator", "blueocean",
+                  "credentials-binding", "pipeline-github-lib", "github"
+                ]
+
+                plugins.each {
+                  if (!pluginManager.getPlugin(it)) {
+                    def plugin = updateCenter.getPlugin(it)
+                    if (plugin) {
+                      plugin.deploy()
+                    }
+                  }
+                }
+                instance.save()
+                EOT
+
+                # Jenkins 초기 마법사 스킵
+                echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+                echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
+
+                systemctl enable jenkins
+                systemctl restart jenkins
+                EOF
+
 
 }
 
