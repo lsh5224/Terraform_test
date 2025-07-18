@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: boards
+spec:
+  selector:
+    app: boards
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: {{ .Values.backend.boards.port }}
+  type: ClusterIP

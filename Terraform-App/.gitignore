@@ -1,0 +1,22 @@
+# Local .terraform directories
+.terraform/
+
+# .tfstate files (store sensitive info)
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Terraform variable files containing secrets
+*.tfvars
+*.tfvars.json
+
+# Plan output
+*.tfplan
+
+# Other editor/OS files
+*.DS_Store
+*.swp
+*.swo
+*~

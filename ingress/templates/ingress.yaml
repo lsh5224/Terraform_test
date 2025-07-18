@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    kubernetes.io/ingress.class: alb
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /api/boards/
+            pathType: Prefix
+            backend:
+              service:
+                name: boards
+                port:
+                  number: {{ .Values.boards.port }}
+
+          - path: /api/users/
+            pathType: Prefix
+            backend:
+              service:
+                name: users
+                port:
+                  number: {{ .Values.users.port }}
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: {{ .Values.frontend.port }}
+{{- end }}
+

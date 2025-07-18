@@ -1,0 +1,4 @@
+frontend:
+  image: 235084396989.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
+  tag: 10
+  port: 80

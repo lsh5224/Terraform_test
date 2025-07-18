@@ -1,0 +1,37 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.serviceAccount.name }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "nodes", "namespaces", "secrets", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses/status"]
+    verbs: ["patch", "update"]
+  - apiGroups: ["elbv2.k8s.aws"]
+    resources: ["targetgroupbindings"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch", "update"]
+  - apiGroups: ["elbv2.k8s.aws"]
+    resources: ["targetgroupbindings/status"]
+    verbs: ["patch", "update"]
+  - apiGroups: ["elbv2.k8s.aws"]
+    resources: ["ingressclassparams"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # 공식 문서 기반 추가 권한 필요시 아래처럼 추가
+{{- end }}
+

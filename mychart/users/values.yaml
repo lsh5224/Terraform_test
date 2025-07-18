@@ -1,0 +1,10 @@
+backend:
+  users:
+    image: 235084396989.dkr.ecr.ap-northeast-2.amazonaws.com/backend-user
+    tag: 7
+    port: 8080
+
+mariadb:
+  port: 3306
+  userName: MSA_User
+  rootPassword: passw0rd

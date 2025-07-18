@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aws-load-balancer-controller
+  template:
+    metadata:
+      labels:
+        app: aws-load-balancer-controller
+    spec:
+      serviceAccountName: aws-load-balancer-controller
+      containers:
+        - name: aws-load-balancer-controller
+          image: {{ .Values.albController.image }}
+          args:
+            - --cluster-name={{ .Values.clusterName }}
+            - --ingress-class=alb
+            - --aws-region={{ .Values.region }}
+            - --aws-vpc-id={{ .Values.vpcId }}
+            - --webhook-cert-dir=/tmp/k8s-webhook-server/serving-certs
+          env:
+            - name: AWS_REGION
+              value: {{ .Values.region }}
+          volumeMounts:
+            - name: webhook-cert
+              mountPath: /tmp/k8s-webhook-server/serving-certs
+              readOnly: true
+      volumes:
+        - name: webhook-cert
+          secret:
+            secretName: {{ .Values.webhook.certSecretName }}
+

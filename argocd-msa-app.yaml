@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: msa-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lsh5224/Terraform_test.git
+    targetRevision: HEAD
+    path: mychart
+    helm:
+      valueFiles:
+        - boards/values.yaml
+        - users/values.yaml
+        - frontend/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

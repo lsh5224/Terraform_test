@@ -1,0 +1,19 @@
+clusterName: ""
+region: ap-northeast-2
+vpcId: ""
+
+albController:
+  image: lsh5224/aws-lb-controller:v2.7.1
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: aws-load-balancer-controller
+  annotations:
+    eks.amazonaws.com/role-arn: ""
+
+webhook:
+  certSecretName: aws-load-balancer-webhook-tls
+

@@ -1,0 +1,12 @@
+ingress:
+  enabled: true
+
+frontend:
+  port: 80
+
+boards:
+  port: 8080
+
+users:
+  port: 8080
+
