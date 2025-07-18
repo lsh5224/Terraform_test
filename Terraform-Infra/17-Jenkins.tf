@@ -89,13 +89,12 @@ resource "aws_instance" "jenkins" {
               echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
 
               # 권한 설정
-              chown -R jenkins:jenkins /var/lib/jenkins
+              sudo chown -R jenkins:jenkins /var/lib/jenkins
 
               # Jenkins 시작
-              systemctl enable jenkins
-              systemctl restart jenkins
+              sudo systemctl enable jenkins
+              sudo systemctl restart jenkins
               EOF
-
 
 }
 
