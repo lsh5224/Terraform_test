@@ -53,21 +53,33 @@ resource "aws_instance" "jenkins" {
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt update -y
-              sudo apt install -y docker.io
-              sudo usermod -aG docker ubuntu
-              sudo systemctl enable docker
-              sudo systemctl start docker
+              apt update -y
+              apt install -y software-properties-common
+              apt install -y openjdk-17-jdk
+
+              # 기본 java를 java 17로 설정
+              update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1
+              update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
+              # Docker 설치
+              apt install -y docker.io
+              usermod -aG docker ubuntu
+              systemctl enable docker
+              systemctl start docker
 
               # Jenkins 설치
-              sudo apt install -y openjdk-17-jdk
-              wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
-              sudo sh -c 'echo deb https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
-              sudo apt update -y
-              sudo apt install -y jenkins
-              sudo systemctl enable jenkins
-              sudo systemctl start jenkins
+              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee \
+                /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+                https://pkg.jenkins.io/debian binary/ | tee \
+                /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+              apt update -y
+              apt install -y jenkins
+              systemctl enable jenkins
+              systemctl start jenkins
               EOF
+
 }
 
 resource "aws_iam_role" "jenkins_ecr_role" {
