@@ -13,9 +13,9 @@ resource "grafana_data_source" "prometheus" {
   type = "prometheus"
   url  = "http://prometheus-server.monitoring.svc.cluster.local:80" # ← 클러스터 내 주소
 
-  json_data = jsonencode({
-    timeInterval = "30s"
-  })
+  json_data = {
+    time_interval = "30s"
+  }
 }
 
 resource "grafana_contact_point" "discord" {
