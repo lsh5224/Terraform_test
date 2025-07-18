@@ -52,49 +52,49 @@ resource "aws_instance" "jenkins" {
   }
 
   user_data = <<-EOF
-              #!/bin/bash
-              set -e
+                #!/bin/bash
+                set -e
 
-              apt update -y
-              apt install -y openjdk-17-jdk docker.io curl gnupg2
+                apt update -y
+                apt install -y openjdk-17-jdk docker.io curl gnupg2
 
-              usermod -aG docker ubuntu
-              systemctl enable docker
-              systemctl start docker
+                usermod -aG docker ubuntu
+                systemctl enable docker
+                systemctl start docker
 
-              # Jenkins 설치
-              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
-              apt update -y
-              apt install -y jenkins
+                # Jenkins 설치
+                curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+                echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
+                apt update -y
+                apt install -y jenkins
 
-              # Jenkins 자동 설정
-              mkdir -p /var/lib/jenkins/init.groovy.d
+                # Groovy 자동 설정
+                mkdir -p /var/lib/jenkins/init.groovy.d
+                cat <<'EOT' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
+                import jenkins.model.*
+                import hudson.security.*
+                def instance = Jenkins.getInstance()
+                def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+                hudsonRealm.createAccount("admin", "admin")
+                instance.setSecurityRealm(hudsonRealm)
+                def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+                strategy.setAllowAnonymousRead(false)
+                instance.setAuthorizationStrategy(strategy)
+                instance.save()
+                EOT
 
-              cat >/var/lib/jenkins/init.groovy.d/basic-security.groovy <<'EOT'
-              import jenkins.model.*
-              import hudson.security.*
-              def instance = Jenkins.getInstance()
-              def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-              hudsonRealm.createAccount("admin", "admin")
-              instance.setSecurityRealm(hudsonRealm)
-              def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-              strategy.setAllowAnonymousRead(false)
-              instance.setAuthorizationStrategy(strategy)
-              instance.save()
-              EOT
+                # Jenkins 초기 마법사 스킵
+                echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+                echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
 
-              # Jenkins 초기 마법사 스킵
-              echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-              echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
+                # Jenkins 권한 조정
+                chown -R jenkins:jenkins /var/lib/jenkins
 
-              # 권한 설정
-              sudo chown -R jenkins:jenkins /var/lib/jenkins
+                # Jenkins 시작
+                systemctl enable jenkins
+                systemctl restart jenkins
+  EOF
 
-              # Jenkins 시작
-              sudo systemctl enable jenkins
-              sudo systemctl restart jenkins
-              EOF
 
 }
 
