@@ -1,7 +1,49 @@
+data "aws_iam_policy_document" "ec2_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_security_group" "jenkins_sg" {
+  name        = "jenkins-sg"
+  description = "Allow Jenkins and SSH"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Jenkins 접속용
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["YOUR.IP.ADDR.XX/32"]  # SSH 접속용
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "jenkins-sg"
+  }
+}
+
 resource "aws_instance" "jenkins" {
-  ami                    = "ami-xxxxxxxxxxxxxxxxx" # Ubuntu 또는 Amazon Linux
+  ami                    = "ami-056a29f2eddc40520" # Ubuntu 또는 Amazon Linux
   instance_type          = "t3.medium"
-  subnet_id              = aws_subnet.public_1a.id
+  subnet_id              = aws_subnet.MSA_pub_subnet_2c.id
   associate_public_ip_address = true
   key_name               = "ja-01"
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
