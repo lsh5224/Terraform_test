@@ -52,65 +52,49 @@ resource "aws_instance" "jenkins" {
   }
 
   user_data = <<-EOF
-                #!/bin/bash
-                apt update -y
-                apt install -y openjdk-17-jdk docker.io
-                usermod -aG docker ubuntu
-                systemctl enable docker
-                systemctl start docker
+              #!/bin/bash
+              set -e
 
-                # Jenkins 설치
-                curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-                echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
-                apt update -y
-                apt install -y jenkins
+              apt update -y
+              apt install -y openjdk-17-jdk docker.io curl gnupg2
 
-                # Jenkins 자동 설정: admin 계정 + 플러그인 설치
-                mkdir -p /var/lib/jenkins/init.groovy.d
+              usermod -aG docker ubuntu
+              systemctl enable docker
+              systemctl start docker
 
-                cat <<EOT > /var/lib/jenkins/init.groovy.d/basic-security.groovy
-                import jenkins.model.*
-                import hudson.security.*
-                def instance = Jenkins.getInstance()
-                def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-                hudsonRealm.createAccount("admin", "admin")
-                instance.setSecurityRealm(hudsonRealm)
-                def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-                strategy.setAllowAnonymousRead(false)
-                instance.setAuthorizationStrategy(strategy)
-                instance.save()
-                EOT
+              # Jenkins 설치
+              curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+              echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
+              apt update -y
+              apt install -y jenkins
 
-                cat <<EOT > /var/lib/jenkins/init.groovy.d/plugins.groovy
-                import jenkins.model.*
-                import hudson.model.*
-                def instance = Jenkins.getInstance()
-                def pluginManager = instance.getPluginManager()
-                def updateCenter = instance.getUpdateCenter()
+              # Jenkins 자동 설정
+              mkdir -p /var/lib/jenkins/init.groovy.d
 
-                def plugins = [
-                  "git", "workflow-aggregator", "blueocean",
-                  "credentials-binding", "pipeline-github-lib", "github"
-                ]
+              cat >/var/lib/jenkins/init.groovy.d/basic-security.groovy <<'EOT'
+              import jenkins.model.*
+              import hudson.security.*
+              def instance = Jenkins.getInstance()
+              def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+              hudsonRealm.createAccount("admin", "admin")
+              instance.setSecurityRealm(hudsonRealm)
+              def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+              strategy.setAllowAnonymousRead(false)
+              instance.setAuthorizationStrategy(strategy)
+              instance.save()
+              EOT
 
-                plugins.each {
-                  if (!pluginManager.getPlugin(it)) {
-                    def plugin = updateCenter.getPlugin(it)
-                    if (plugin) {
-                      plugin.deploy()
-                    }
-                  }
-                }
-                instance.save()
-                EOT
+              # Jenkins 초기 마법사 스킵
+              echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+              echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
 
-                # Jenkins 초기 마법사 스킵
-                echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-                echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
+              # 권한 설정
+              chown -R jenkins:jenkins /var/lib/jenkins
 
-                systemctl enable jenkins
-                systemctl restart jenkins
-                EOF
+              # Jenkins 시작
+              systemctl enable jenkins
+              systemctl restart jenkins
+              EOF
 
 
 }
