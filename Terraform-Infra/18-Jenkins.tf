@@ -5,7 +5,7 @@ resource "aws_instance" "jenkins" {
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
   key_name               = "ja-01"
 
-  user_data = templatefile("${path.module}/scripts/init_jenkins.sh")
+  user_data = file("${path.module}/scripts/init_jenkins.sh")
 
   tags = {
     Name = "Jenkins-Server"
