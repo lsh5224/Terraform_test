@@ -11,3 +11,10 @@ resource "aws_instance" "jenkins" {
     Name = "Jenkins-Server"
   }
 }
+
+
+
+
+
+
+
