@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+
+
+
+
+
 # 최신 Java 설치 (Temurin OpenJDK 21 기준)
 sudo apt update -y
 sudo apt install -y wget gnupg curl unzip

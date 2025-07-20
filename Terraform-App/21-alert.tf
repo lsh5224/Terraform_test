@@ -1,13 +1,3 @@
-# variable "grafana_api_key" {
-#   type      = string
-#   sensitive = true
-# }
-
-# provider "grafana" {
-#   url  = "http://k8s-monitori-grafanai-da2b011f10-124882021.ap-northeast-2.elb.amazonaws.com"
-#   auth = var.grafana_api_key
-# }
-
 # resource "grafana_data_source" "prometheus" {
 #   name = "Prometheus"
 #   type = "prometheus"
@@ -155,7 +145,7 @@
 # }
 
 
-## 프로메테우스도 ALB로 열어놔야가능
+# ## 프로메테우스도 ALB로 열어놔야가능
 
 variable "grafana_url" {
   description = "The URL of the Grafana instance"
@@ -168,8 +158,8 @@ variable "grafana_api_key" {
   sensitive   = true
 }
 
-variable "discord_webhook_url" {
-  description = "Discord Webhook URL for notifications"
-  type        = string
-  sensitive   = true
-}
+# variable "discord_webhook_url" {
+#   description = "Discord Webhook URL for notifications"
+#   type        = string
+#   sensitive   = true
+# }

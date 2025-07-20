@@ -24,3 +24,8 @@ terraform {
 provider "aws" {
   region = "ap-northeast-2" # Asia Pacific (Seoul)
 }
+
+provider "grafana" {
+  url  = "http://k8s-monitori-grafanai-da2b011f10-124882021.ap-northeast-2.elb.amazonaws.com"
+  auth = var.grafana_api_key
+}
