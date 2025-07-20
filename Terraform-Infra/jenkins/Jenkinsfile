@@ -36,7 +36,8 @@ pipeline {
           def repo = env.REPO  // ✅ 환경 변수로부터 안전하게 가져옴
 
           if (repo == 'frontend') {
-            env.VALUES_FILE = 'terraform/mychart/frontend/values.yaml'
+             env.YQ_PATH = '.frontend.tag'
+                 env.VALUES_FILE = 'terraform/mychart/frontend/values.yaml'
           } else if (repo == 'boards') {
             env.VALUES_FILE = 'terraform/mychart/boards/values.yaml'
           } else if (repo == 'users') {
