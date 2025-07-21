@@ -51,62 +51,9 @@ resource "aws_instance" "jenkins" {
     Name = "jenkins"
   }
 
-user_data = <<-EOF
-#!/bin/bash
-set -e
-
-# DNS & 호스트 이름 설정
-echo "127.0.1.1 jenkins" >> /etc/hosts
-rm -f /etc/resolv.conf
-echo "nameserver 8.8.8.8" > /etc/resolv.conf
-
-# 필수 패키지
-apt update -y
-apt install -y openjdk-17-jdk docker.io curl gnupg2
-
-usermod -aG docker ubuntu
-systemctl enable docker
-systemctl start docker
-
-# Jenkins 설치 준비
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
-
-apt update -y
-apt install -y jenkins
-
-# Jenkins 자동 실행 방지 및 중지
-systemctl disable jenkins
-systemctl stop jenkins || true
-
-# Groovy 스크립트 생성 (✅ 반드시 들여쓰기 제거)
-mkdir -p /var/lib/jenkins/init.groovy.d
-cat <<'EOT' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
-import jenkins.model.*
-import hudson.security.*
-
-def instance = Jenkins.getInstance()
-def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-hudsonRealm.createAccount("admin", "admin")
-instance.setSecurityRealm(hudsonRealm)
-
-def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-strategy.setAllowAnonymousRead(false)
-instance.setAuthorizationStrategy(strategy)
-instance.save()
-EOT
-
-# 마법사 우회 설정
-echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
-
-# 권한 설정
-chown -R jenkins:jenkins /var/lib/jenkins
-
-# Jenkins 시작
-systemctl enable jenkins
-systemctl start jenkins
-EOF
+  user_data = templatefile("${path.module}/scripts/init_jenkins.sh.tpl", {
+    public_ip = aws_instance.jenkins.public_ip
+  })
 
 }
 
