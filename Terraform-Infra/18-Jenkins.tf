@@ -9,7 +9,7 @@ resource "aws_instance" "jenkins" {
 
   tags = {
     Name = "Jenkins-Server"
-    RedeployTag = "force-redeploy-1"  # ✅ 매번 바꿔주세요
+    RedeployTag = "force-redeploy-2"  # ✅ 매번 바꿔주세요
   }
 }
 
