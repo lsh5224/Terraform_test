@@ -43,7 +43,7 @@ resource "aws_security_group" "jenkins_sg" {
 resource "aws_instance" "jenkins" {
   ami                    = "ami-056a29f2eddc40520" # Ubuntu 또는 Amazon Linux
   instance_type          = "t3.medium"
-  subnet_id              = aws_subnet.MSA_pub_subnet_2c.id
+  subnet_id              = aws_subnet.MSA_pub_subnet_2a.id
   associate_public_ip_address = true
   key_name               = "ja-01"
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
@@ -54,7 +54,11 @@ resource "aws_instance" "jenkins" {
   user_data = <<-EOF
   #!/bin/bash
   set -e
-
+  
+  # DNS 설정
+  sudo rm -f /etc/resolv.conf
+  echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+  
   # Jenkins 사전 준비
   apt update -y
   apt install -y openjdk-17-jdk docker.io curl gnupg2
