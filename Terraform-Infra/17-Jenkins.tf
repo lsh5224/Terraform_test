@@ -51,66 +51,62 @@ resource "aws_instance" "jenkins" {
     Name = "jenkins"
   }
 
-  user_data = <<-EOF
-  #!/bin/bash
-  set -e
-  
-  # DNS 설정
-  echo "127.0.1.1 jenkins" | sudo tee -a /etc/hosts
-  sudo rm -f /etc/resolv.conf
-  echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-  
-  # Jenkins 사전 준비
-  apt update -y
-  apt install -y openjdk-17-jdk docker.io curl gnupg2
+user_data = <<-EOF
+#!/bin/bash
+set -e
 
-  usermod -aG docker ubuntu
-  systemctl enable docker
-  systemctl start docker
+# DNS & 호스트 이름 설정
+echo "127.0.1.1 jenkins" >> /etc/hosts
+rm -f /etc/resolv.conf
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
-  # Jenkins 설치 전 자동 시작 방지
-  echo "Package: jenkins" > /etc/apt/preferences.d/jenkins
-  echo "Pin: origin pkg.jenkins.io" >> /etc/apt/preferences.d/jenkins
-  echo "Pin-Priority: 1001" >> /etc/apt/preferences.d/jenkins
+# 필수 패키지
+apt update -y
+apt install -y openjdk-17-jdk docker.io curl gnupg2
 
-  # key 및 소스 등록
-  curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-  echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
-  apt update -y
+usermod -aG docker ubuntu
+systemctl enable docker
+systemctl start docker
 
-  # Jenkins 설치 후 자동시작 막기 (IMPORTANT)
-  systemctl disable jenkins
-  apt install -y jenkins
-  systemctl stop jenkins || true
+# Jenkins 설치 준비
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
 
-  # Groovy 자동화 스크립트 준비
-  mkdir -p /var/lib/jenkins/init.groovy.d
-  cat <<'EOT' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
-  import jenkins.model.*
-  import hudson.security.*
-  def instance = Jenkins.getInstance()
-  def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-  hudsonRealm.createAccount("admin", "admin")
-  instance.setSecurityRealm(hudsonRealm)
-  def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-  strategy.setAllowAnonymousRead(false)
-  instance.setAuthorizationStrategy(strategy)
-  instance.save()
-  EOT
+apt update -y
+apt install -y jenkins
 
-  # 초기 마법사 스킵
-  echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-  echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
+# Jenkins 자동 실행 방지 및 중지
+systemctl disable jenkins
+systemctl stop jenkins || true
 
-  # 권한 설정
-  chown -R jenkins:jenkins /var/lib/jenkins
+# Groovy 스크립트 생성 (✅ 반드시 들여쓰기 제거)
+mkdir -p /var/lib/jenkins/init.groovy.d
+cat <<'EOT' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
+import jenkins.model.*
+import hudson.security.*
 
-  # Jenkins 시작
-  systemctl enable jenkins
-  systemctl restart jenkins
-  EOF
+def instance = Jenkins.getInstance()
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+hudsonRealm.createAccount("admin", "admin")
+instance.setSecurityRealm(hudsonRealm)
 
+def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+strategy.setAllowAnonymousRead(false)
+instance.setAuthorizationStrategy(strategy)
+instance.save()
+EOT
 
+# 마법사 우회 설정
+echo "2.0" > /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+echo "2.519" > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
+
+# 권한 설정
+chown -R jenkins:jenkins /var/lib/jenkins
+
+# Jenkins 시작
+systemctl enable jenkins
+systemctl start jenkins
+EOF
 
 }
 
