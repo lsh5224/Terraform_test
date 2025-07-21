@@ -56,6 +56,7 @@ resource "aws_instance" "jenkins" {
   set -e
   
   # DNS 설정
+  echo "127.0.1.1 jenkins" | sudo tee -a /etc/hosts
   sudo rm -f /etc/resolv.conf
   echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
   
