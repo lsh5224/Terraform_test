@@ -18,6 +18,9 @@ echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins
 apt update -y
 apt install -y jenkins
 
+systemctl disable jenkins
+systemctl stop jenkins || true
+
 mkdir -p /var/lib/jenkins/init.groovy.d
 cat <<'EOT' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
 import jenkins.model.*
@@ -26,7 +29,7 @@ import jenkins.model.JenkinsLocationConfiguration
 
 def instance = Jenkins.getInstance()
 def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-hudsonRealm.createAccount("lsh", "a13s13d13")
+hudsonRealm.createAccount("admin", "admin")
 instance.setSecurityRealm(hudsonRealm)
 
 def strategy = new FullControlOnceLoggedInAuthorizationStrategy()

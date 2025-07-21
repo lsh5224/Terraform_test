@@ -10,3 +10,10 @@ data "aws_eks_node_group" "MSA_eks_node_group" {
   cluster_name    = data.aws_eks_cluster.MSA_eks_cluster.name
   node_group_name = "MSA_eks_node_group"   # 실제 NodeGroup 이름
 }
+
+
+
+
+
+
+
