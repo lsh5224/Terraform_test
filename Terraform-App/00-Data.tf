@@ -15,5 +15,3 @@ data "aws_eks_node_group" "MSA_eks_node_group" {
 
 
 
-
-
