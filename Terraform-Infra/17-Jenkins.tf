@@ -18,14 +18,14 @@ resource "aws_security_group" "jenkins_sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Jenkins 접속용
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # SSH 접속용
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -40,68 +40,28 @@ resource "aws_security_group" "jenkins_sg" {
   }
 }
 
+data "template_file" "jenkins_user_data" {
+  template = file("${path.module}/scripts/init_jenkins.sh.tpl")
+  vars = {
+    public_ip = "REPLACE_ME_WITH_ACTUAL_PUBLIC_IP"
+  }
+}
+
 resource "aws_instance" "jenkins" {
-  ami                    = "ami-056a29f2eddc40520" # Ubuntu 또는 Amazon Linux
-  instance_type          = "t3.medium"
-  subnet_id              = aws_subnet.MSA_pub_subnet_2a.id
+  ami                         = "ami-056a29f2eddc40520"
+  instance_type               = "t3.medium"
+  subnet_id                   = aws_subnet.MSA_pub_subnet_2a.id
   associate_public_ip_address = true
-  key_name               = "ja-01"
-  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+  key_name                    = "ja-01"
+  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+
+  user_data = data.template_file.jenkins_user_data.rendered
+
   tags = {
     Name = "jenkins"
   }
-
-  user_data = templatefile("${path.module}/scripts/init_jenkins.sh.tpl", {
-    public_ip = aws_instance.jenkins.public_ip
-  })
-
 }
 
-resource "aws_iam_role" "jenkins_ecr_role" {
-  name = "jenkins-ecr-access"
-  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+output "jenkins_public_ip" {
+  value = aws_instance.jenkins.public_ip
 }
-
-resource "aws_iam_policy" "jenkins_ecr_policy" {
-  name   = "jenkins-ecr-policy"
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect   = "Allow",
-        Action   = [
-          "ecr:DescribeRepositories",
-          "ecr:ListImages",
-          "ecr:BatchGetImage"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "jenkins_ecr_attachment" {
-  role       = aws_iam_role.jenkins_ecr_role.name
-  policy_arn = aws_iam_policy.jenkins_ecr_policy.arn
-}
-
-
-variable "ecr_repositories" {
-  default = [
-    "backend-boards",
-    "backend-user",
-    "frontend"
-  ]
-}
-
-variable "terraform_values_repo" {
-  default = "https://github.com/lsh5224/Terraform_test.git"
-}
-
-
-
-
-
-
-
-
