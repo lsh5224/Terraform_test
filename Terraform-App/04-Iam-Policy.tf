@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "alb_controller" {
-  name   = "AWSLoadBalancerControllerIAMPolicy"
+  name   = "AWSLoadBalancerControllerIAMPolicylsh"
   policy = <<EOF
 {
     "Version": "2012-10-17",
