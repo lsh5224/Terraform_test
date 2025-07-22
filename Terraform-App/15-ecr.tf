@@ -13,7 +13,7 @@ resource "aws_ecr_repository" "repos" {
 
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
