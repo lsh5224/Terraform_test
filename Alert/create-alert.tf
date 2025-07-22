@@ -11,7 +11,7 @@ resource "grafana_rule_group" "app_alerts" {
     condition = "B"
     for       = "1m"
 
-    # A: 시계열 쿼리 (비정상)
+    # A: 전체 비정상 board-.* Pod 수를 한 번에 합산
     data {
       ref_id         = "A"
       datasource_uid = data.grafana_data_source.prometheus.uid
@@ -22,12 +22,12 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"board-.*\",phase!=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"board-.*\",phase!=\"Running\"})"
         refId  = "A"
       })
     }
 
-    # B: A > 0 인지 수식으로 스칼라화
+    # B: A > 0 검사 (스칼라 값)
     data {
       ref_id         = "B"
       datasource_uid = "__expr__"
@@ -63,11 +63,11 @@ resource "grafana_rule_group" "app_alerts" {
 
       relative_time_range {
         from = 60
-         to   = 0
-       }
+        to   = 0
+      }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"})"
         refId  = "A"
       })
     }
@@ -77,9 +77,10 @@ resource "grafana_rule_group" "app_alerts" {
       datasource_uid = "__expr__"
 
       relative_time_range {
-        from = 60
-         to   = 0
-       }
+        from = 0
+        to   = 0
+      }
+
       model = jsonencode({
         expression = "$A > 0"
         type       = "math"
@@ -106,11 +107,11 @@ resource "grafana_rule_group" "app_alerts" {
 
       relative_time_range {
         from = 60
-         to   = 0
-       }
+        to   = 0
+      }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"})"
         refId  = "A"
       })
     }
@@ -120,9 +121,10 @@ resource "grafana_rule_group" "app_alerts" {
       datasource_uid = "__expr__"
 
       relative_time_range {
-        from = 60
-         to   = 0
-       }
+        from = 0
+        to   = 0
+      }
+
       model = jsonencode({
         expression = "$A > 0"
         type       = "math"
@@ -149,11 +151,11 @@ resource "grafana_rule_group" "app_alerts" {
 
       relative_time_range {
         from = 60
-         to   = 0
-       }
+        to   = 0
+      }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"board-.*\",phase=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"board-.*\",phase=\"Running\"})"
         refId  = "A"
       })
     }
@@ -163,9 +165,9 @@ resource "grafana_rule_group" "app_alerts" {
       datasource_uid = "__expr__"
 
       relative_time_range {
-        from = 60
-         to   = 0
-       }
+        from = 0
+        to   = 0
+      }
 
       model = jsonencode({
         expression = "$A > 0"
@@ -193,11 +195,11 @@ resource "grafana_rule_group" "app_alerts" {
 
       relative_time_range {
         from = 60
-         to   = 0
-       }
+        to   = 0
+      }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"})"
         refId  = "A"
       })
     }
@@ -207,9 +209,9 @@ resource "grafana_rule_group" "app_alerts" {
       datasource_uid = "__expr__"
 
       relative_time_range {
-        from = 60
-         to   = 0
-       }
+        from = 0
+        to   = 0
+      }
 
       model = jsonencode({
         expression = "$A > 0"
@@ -237,11 +239,11 @@ resource "grafana_rule_group" "app_alerts" {
 
       relative_time_range {
         from = 60
-         to   = 0
-       }
+        to   = 0
+      }
 
       model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"}) by (pod)"
+        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"})"
         refId  = "A"
       })
     }
@@ -251,9 +253,9 @@ resource "grafana_rule_group" "app_alerts" {
       datasource_uid = "__expr__"
 
       relative_time_range {
-        from = 60
-         to   = 0
-       }
+        from = 0
+        to   = 0
+      }
 
       model = jsonencode({
         expression = "$A > 0"
