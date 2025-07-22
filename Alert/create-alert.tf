@@ -1,271 +1,271 @@
-resource "grafana_rule_group" "app_alerts" {
-  name             = "Application Alerts"
-  folder_uid       = grafana_folder.alerts.uid
-  interval_seconds = 60   # 1분마다 평가
+# resource "grafana_rule_group" "app_alerts" {
+#   name             = "Application Alerts"
+#   folder_uid       = grafana_folder.alerts.uid
+#   interval_seconds = 60   # 1분마다 평가
 
-  ##################################################################
-  # 1) Board Pods Down
-  ##################################################################
-  rule {
-    name      = "Board Pods Down"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 1) Board Pods Down
+#   ##################################################################
+#   rule {
+#     name      = "Board Pods Down"
+#     condition = "B"
+#     for       = "1m"
 
-    # A: 비정상 boards-.* Pod 전체 수 집계 → 단일 시계열
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     # A: 비정상 boards-.* Pod 전체 수 집계 → 단일 시계열
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase!=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase!=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    # B: A > 0 → 스칼라로 변환
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     # B: A > 0 → 스칼라로 변환
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
 
-  ##################################################################
-  # 2) Users Pods Down
-  ##################################################################
-  rule {
-    name      = "Users Pods Down"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 2) Users Pods Down
+#   ##################################################################
+#   rule {
+#     name      = "Users Pods Down"
+#     condition = "B"
+#     for       = "1m"
 
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
 
-  ##################################################################
-  # 3) Frontend Pods Down
-  ##################################################################
-  rule {
-    name      = "Frontend Pods Down"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 3) Frontend Pods Down
+#   ##################################################################
+#   rule {
+#     name      = "Frontend Pods Down"
+#     condition = "B"
+#     for       = "1m"
 
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
 
-  ##################################################################
-  # 4) Board Pods OK
-  ##################################################################
-  rule {
-    name      = "Board Pods OK"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 4) Board Pods OK
+#   ##################################################################
+#   rule {
+#     name      = "Board Pods OK"
+#     condition = "B"
+#     for       = "1m"
 
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
 
-  ##################################################################
-  # 5) Users Pods OK
-  ##################################################################
-  rule {
-    name      = "Users Pods OK"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 5) Users Pods OK
+#   ##################################################################
+#   rule {
+#     name      = "Users Pods OK"
+#     condition = "B"
+#     for       = "1m"
 
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
 
-  ##################################################################
-  # 6) Frontend Pods OK
-  ##################################################################
-  rule {
-    name      = "Frontend Pods OK"
-    condition = "B"
-    for       = "1m"
+#   ##################################################################
+#   # 6) Frontend Pods OK
+#   ##################################################################
+#   rule {
+#     name      = "Frontend Pods OK"
+#     condition = "B"
+#     for       = "1m"
 
-    data {
-      ref_id         = "A"
-      datasource_uid = data.grafana_data_source.prometheus.uid
+#     data {
+#       ref_id         = "A"
+#       datasource_uid = data.grafana_data_source.prometheus.uid
 
-      relative_time_range {
-        from = 60
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 60
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"})"
-        refId  = "A"
-      })
-    }
+#       model = jsonencode({
+#         expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"})"
+#         refId  = "A"
+#       })
+#     }
 
-    data {
-      ref_id         = "B"
-      datasource_uid = "__expr__"
+#     data {
+#       ref_id         = "B"
+#       datasource_uid = "__expr__"
 
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
+#       relative_time_range {
+#         from = 0
+#         to   = 0
+#       }
 
-      model = jsonencode({
-        expression = "$A > 0"
-        type       = "math"
-        refId      = "B"
-      })
-    }
+#       model = jsonencode({
+#         expression = "$A > 0"
+#         type       = "math"
+#         refId      = "B"
+#       })
+#     }
 
-    notification_settings {
-      contact_point = grafana_contact_point.discord_point.name
-    }
-  }
-}
+#     notification_settings {
+#       contact_point = grafana_contact_point.discord_point.name
+#     }
+#   }
+# }
