@@ -20,3 +20,11 @@ resource "aws_ecr_repository" "repos" {
 variable "ecr_repositories" {
   default = ["backend-boards", "backend-user", "frontend"]
 }
+
+
+
+
+
+
+
+
