@@ -147,16 +147,16 @@
 
 # ## 프로메테우스도 ALB로 열어놔야가능
 
-variable "grafana_url" {
-  description = "The URL of the Grafana instance"
-  type        = string
-}
+# variable "grafana_url" {
+#   description = "The URL of the Grafana instance"
+#   type        = string
+# }
 
-variable "grafana_api_key" {
-  description = "Grafana API Key"
-  type        = string
-  sensitive   = true
-}
+# variable "grafana_api_key" {
+#   description = "Grafana API Key"
+#   type        = string
+#   sensitive   = true
+# }
 
 # variable "discord_webhook_url" {
 #   description = "Discord Webhook URL for notifications"
