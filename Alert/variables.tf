@@ -8,3 +8,8 @@ variable "grafana_api_key" {
   description = "Grafana API Key (sensitive)"
   sensitive   = true
 }
+
+variable "discord_webhook_url" {
+  type        = string
+  description = "Grafana URL"
+}
