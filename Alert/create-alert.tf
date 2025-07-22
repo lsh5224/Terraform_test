@@ -8,10 +8,10 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Board Pods Down"
-    condition = "A"     # reducer/operator 블록 뒤의 refId
+    condition = "B"
     for       = "1m"
 
-    # A: 비정상 상태인 boards-.* Pod 수 집계
+    # A: 비정상 boards-.* Pod 전체 수 집계 → 단일 시계열
     data {
       ref_id         = "A"
       datasource_uid = data.grafana_data_source.prometheus.uid
@@ -22,20 +22,26 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase!=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase!=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    # 마지막 포인트 하나만 가져오기
-    reducer {
-      type = "last"
-    }
+    # B: A > 0 → 스칼라로 변환
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    # 0보다 크면 Alert
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
@@ -48,7 +54,7 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Users Pods Down"
-    condition = "A"
+    condition = "B"
     for       = "1m"
 
     data {
@@ -61,18 +67,25 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase!=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    reducer {
-      type = "last"
-    }
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
@@ -85,7 +98,7 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Frontend Pods Down"
-    condition = "A"
+    condition = "B"
     for       = "1m"
 
     data {
@@ -98,18 +111,25 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase!=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    reducer {
-      type = "last"
-    }
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
@@ -122,7 +142,7 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Board Pods OK"
-    condition = "A"
+    condition = "B"
     for       = "1m"
 
     data {
@@ -135,18 +155,25 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"boards-.*\",phase=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    reducer {
-      type = "last"
-    }
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
@@ -159,7 +186,7 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Users Pods OK"
-    condition = "A"
+    condition = "B"
     for       = "1m"
 
     data {
@@ -172,18 +199,25 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"users-.*\",phase=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    reducer {
-      type = "last"
-    }
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
@@ -196,7 +230,7 @@ resource "grafana_rule_group" "app_alerts" {
   ##################################################################
   rule {
     name      = "Frontend Pods OK"
-    condition = "A"
+    condition = "B"
     for       = "1m"
 
     data {
@@ -209,18 +243,25 @@ resource "grafana_rule_group" "app_alerts" {
       }
 
       model = jsonencode({
-        expr  = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"})"
-        refId = "A"
+        expr   = "sum(kube_pod_status_phase{pod=~\"frontend-.*\",phase=\"Running\"})"
+        refId  = "A"
       })
     }
 
-    reducer {
-      type = "last"
-    }
+    data {
+      ref_id         = "B"
+      datasource_uid = "__expr__"
 
-    operator {
-      type  = "gt"
-      value = "0"
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
+
+      model = jsonencode({
+        expression = "$A > 0"
+        type       = "math"
+        refId      = "B"
+      })
     }
 
     notification_settings {
