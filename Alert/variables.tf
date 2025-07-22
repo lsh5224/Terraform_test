@@ -1,5 +1,10 @@
-variable "discord_webhook_url" {
-  description = "Discord Webhook URL for notifications"
+variable "grafana_url" {
   type        = string
+  description = "Grafana URL"
+}
+
+variable "grafana_api_key" {
+  type        = string
+  description = "Grafana API Key (sensitive)"
   sensitive   = true
 }
