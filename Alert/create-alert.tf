@@ -14,7 +14,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       # ← 꼭 추가!
       relative_time_range {
@@ -41,7 +41,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       relative_time_range {
         from = 60
@@ -67,7 +67,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       relative_time_range {
         from = 60
@@ -93,7 +93,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       relative_time_range {
         from = 60
@@ -119,7 +119,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       relative_time_range {
         from = 60
@@ -145,7 +145,7 @@ resource "grafana_rule_group" "app_alerts" {
 
     data {
       ref_id         = "A"
-      datasource_uid = grafana_data_source.prometheus.uid
+      datasource_uid = data.grafana_data_source.prometheus.uid
 
       relative_time_range {
         from = 60
