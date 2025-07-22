@@ -14,7 +14,40 @@ resource "helm_release" "grafana" {
     name  = "adminPassword"
     value = var.grafana_admin_password
   }
+  set {
+    name  = "sidecar.alerts.enabled"
+    value = "true"
+  }
 
+  set {
+    name  = "sidecar.alerts.defaultFolderName"
+    value = "Alert Rules"
+  }
+
+  set {
+    name  = "sidecar.alerts.folder"
+    value = "/etc/grafana/provisioning/rules"
+  }
+
+  set {
+    name  = "extraVolumeMounts[0].name"
+    value = "alert-rules"
+  }
+
+  set {
+    name  = "extraVolumeMounts[0].mountPath"
+    value = "/etc/grafana/provisioning/rules"
+  }
+
+  set {
+    name  = "extraVolumes[0].name"
+    value = "alert-rules"
+  }
+
+  set {
+    name  = "extraVolumes[0].configMap.name"
+    value = kubernetes_config_map.grafana_alert_rules.metadata[0].name
+  }
   # ① sidecar 활성화 (프로비저닝 파일을 읽어들이는 사이드카)
   set {
     name  = "sidecar.datasources.enabled"

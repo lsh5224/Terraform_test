@@ -1,3 +1,3 @@
 resource "grafana_folder" "alerts" {
-  title = "Alert Rules"
+  title = "Alert-Rules"
 }
