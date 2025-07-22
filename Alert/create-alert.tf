@@ -4,7 +4,6 @@ resource "grafana_rule_group" "app_alerts" {
   name             = "Application Alerts"
   folder_uid       = grafana_folder.alerts.uid
   interval_seconds = 60   # 1분마다 평가
-  org_id           = 1
 
   # 1) board-xxx Pod 비정상(Non-Running) 감지
   rule {
