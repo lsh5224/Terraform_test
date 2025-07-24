@@ -68,20 +68,9 @@ resource "aws_instance" "MSA_pub_ec2_bastion_2a" {
               unzip awscliv2.zip
               ./aws/install
 
-              # kubectl 설치
-              curl -LO "https://dl.k8s.io/release/v1.30.1/bin/linux/amd64/kubectl"
-              chmod +x kubectl
-              mv kubectl /usr/local/bin/
-
               # Helm 설치
               curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-              # Kubeconfig 연결
-              /usr/local/bin/aws eks update-kubeconfig \
-                --region ap-northeast-2 \
-                --name ${aws_eks_cluster.MSA_eks_cluster.name} \
-                --kubeconfig /home/ubuntu/.kube/config
-              
               chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
               # cert-manager CRD 설치
@@ -118,5 +107,4 @@ resource "aws_instance" "MSA_pub_ec2_bastion_2a" {
     "Name" = "MSA_pub_ec2_bastion_2a"
   }
 
-   depends_on = [aws_eks_cluster.MSA_eks_cluster, kubernetes_config_map.aws_auth]
 }
